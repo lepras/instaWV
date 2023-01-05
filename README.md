@@ -8,7 +8,7 @@ Insta WV is a WebView wrapper for using Instagram without exposing your device.
 Features
 --------
 - Clears private data on close
-- Blocks access to Google trackers and other third-party resources
+- [TODO] Blocks access to trackers and other third-party resources
 - Restricts all network requests to HTTPS
 
 Downsides
