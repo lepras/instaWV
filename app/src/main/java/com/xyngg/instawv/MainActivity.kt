@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         mapsCookieManager.setAcceptThirdPartyCookies(mapsWebView, false)
 
         //Delete anything from previous sessions
-        resetWebView(false)
+//        resetWebView(false)
 
         //Set the consent cookie to prevent unnecessary redirections
         setConsentCookie()
@@ -205,7 +205,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        resetWebView(true)
+//        resetWebView(true)
     }
 
 
