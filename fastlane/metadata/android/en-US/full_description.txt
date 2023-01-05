@@ -1,0 +1,1 @@
+This is a restricted WebView wrapper for accessing the web version of Instagram. Intended for use with a custom profile, android faker and a VPN.
