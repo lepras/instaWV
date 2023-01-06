@@ -19,7 +19,7 @@ Features
 Downsides
 ---------
 Well facebook is probably clever to circumvent this. 
-Use it in custom profile with android faker & XPrivacyLua with a VPN for maximum privacy (whatever that is)
+Use it in custom profile with `android faker` & `XPrivacyLua` with a `VPN` for maximum privacy (whatever that is)
 
 Credits
 -------
