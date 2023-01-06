@@ -5,6 +5,11 @@ Overview
 --------
 Insta WV is a WebView wrapper for using Instagram without exposing your device.
 
+## Other porjects to look out for
+
+* [Tinfoil for Facebook](https://github.com/velazcod/Tinfoil-Facebook)
+* [Hermit - Lite Apps Browser](https://hermit.chimbori.com/)
+
 Features
 --------
 - Clears private data on close
