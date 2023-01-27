@@ -22,7 +22,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     private var instaWebView: WebView? = null
     private var instaWebSettings: WebSettings? = null
-    private var mapsCookieManager: CookieManager? = null
+    private var instaCookieManager: CookieManager? = null
 
     private val allowedDomains = ArrayList<String>()
     private val allowedDomainsStart = ArrayList<String>()
@@ -52,9 +52,9 @@ class MainActivity : AppCompatActivity() {
         instaWebView = findViewById<View>(R.id.InstaWebView) as WebView
 
         //Set cookie options
-        var mapsCookieManager = CookieManager.getInstance()
-        mapsCookieManager.setAcceptCookie(true)
-        mapsCookieManager.setAcceptThirdPartyCookies(instaWebView, false)
+        var instaCookieManager = CookieManager.getInstance()
+        instaCookieManager.setAcceptCookie(true)
+        instaCookieManager.setAcceptThirdPartyCookies(instaWebView, false)
 
         //Delete anything from previous sessions
 //        resetWebView(false)
@@ -65,8 +65,9 @@ class MainActivity : AppCompatActivity() {
         //Restrict what gets loaded
         initURLs()
         instaWebView!!.webViewClient = object : WebViewClient() {
-            var hostname = "localhost" /*127.0.0.1*/
-            var port = 1080
+
+            var hostname: String = System.getenv("hostname") ?: "localhost" /*127.0.0.1*/
+            var port: Int = System.getenv("port")?.toInt() ?: 1080
             var proxy: Proxy = Proxy(
                 Proxy.Type.SOCKS,
                 InetSocketAddress(hostname, port)
@@ -259,8 +260,8 @@ class MainActivity : AppCompatActivity() {
         instaWebView!!.clearHistory()
         instaWebView!!.clearMatches()
         instaWebView!!.clearSslPreferences()
-//        mapsCookieManager!!.removeSessionCookie()
-//        mapsCookieManager!!.removeAllCookie()
+//        instaCookieManager!!.removeSessionCookie()
+//        instaCookieManager!!.removeAllCookie()
         CookieManager.getInstance().removeAllCookies(null)
         CookieManager.getInstance().flush()
         WebStorage.getInstance().deleteAllData()
@@ -277,9 +278,9 @@ class MainActivity : AppCompatActivity() {
         val random2digit = random.nextInt(2) + 15
         val random3digit = random.nextInt(999)
         val consentCookie = "YES+cb.$consentDate-$random2digit-p1.en+F+$random3digit"
-//        mapsCookieManager!!.setCookie(".google.com", "CONSENT=$consentCookie;")
-        //mapsCookieManager.setCookie(".google.com", "CONSENT=PENDING+" + random3digit + ";"); //alternative
-//        mapsCookieManager!!.setCookie(".google.com", "ANID=OPT_OUT;")
+//        instaCookieManager!!.setCookie(".google.com", "CONSENT=$consentCookie;")
+        //instaCookieManager.setCookie(".google.com", "CONSENT=PENDING+" + random3digit + ";"); //alternative
+//        instaCookieManager!!.setCookie(".google.com", "ANID=OPT_OUT;")
     }
 
     private fun initURLs() {
