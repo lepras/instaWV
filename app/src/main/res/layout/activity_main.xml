@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <WebView
-        android:id="@+id/mapsWebView"
+        android:id="@+id/InstaWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
