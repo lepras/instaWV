@@ -8,9 +8,8 @@ import android.view.View
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
+import org.json.JSONObject
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Proxy
@@ -30,14 +29,14 @@ class MainActivity : AppCompatActivity() {
     private val blockedURLs = ArrayList<String>()
 
     private val consentDateFormat: DateFormat = SimpleDateFormat("yyyyMMdd")
-    private val TAG = "GMapsWV"
+    private val TAG = "InstaWV"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         setContentView(R.layout.activity_main)
 
-        var urlToLoad = "https://www.instagram.com"
+        val urlToLoad = "https://www.instagram.com"
         //try {
         //    val data = intent.data
         //    urlToLoad = data.toString()
@@ -52,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         instaWebView = findViewById<View>(R.id.InstaWebView) as WebView
 
         //Set cookie options
-        var instaCookieManager = CookieManager.getInstance()
+        val instaCookieManager = CookieManager.getInstance()
         instaCookieManager.setAcceptCookie(true)
         instaCookieManager.setAcceptThirdPartyCookies(instaWebView, false)
 
@@ -65,15 +64,6 @@ class MainActivity : AppCompatActivity() {
         //Restrict what gets loaded
         initURLs()
         instaWebView!!.webViewClient = object : WebViewClient() {
-
-            var hostname: String = System.getenv("hostname") ?: "localhost" /*127.0.0.1*/
-            var port: Int = System.getenv("port")?.toInt() ?: 1080
-            var proxy: Proxy = Proxy(
-                Proxy.Type.SOCKS,
-                InetSocketAddress(hostname, port)
-            )
-            private val okHttp: OkHttpClient = OkHttpClient.Builder().proxy(proxy).build()
-
             //Keep these in sync!
             override fun shouldInterceptRequest(
                 view: WebView,
@@ -100,12 +90,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 for (url in allowedDomainsStart) {
-                    if (request.url.host!!.startsWith(url!!)) {
+                    if (request.url.host!!.startsWith(url)) {
                         allowed = true
                     }
                 }
                 for (url in allowedDomainsEnd) {
-                    if (request.url.host!!.endsWith(url!!)) {
+                    if (request.url.host!!.endsWith(url)) {
                         allowed = true
                     }
                 }
@@ -121,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                     ) //Deny URLs not on ALLOWLIST
                 }
                 for (url in blockedURLs) {
-                    if (request.url.toString().contains(url!!)) {
+                    if (request.url.toString().contains(url)) {
                         if (request.url.toString().contains("/log204?")) {
                             Log.d(
                                 TAG,
@@ -142,7 +132,31 @@ class MainActivity : AppCompatActivity() {
                 }
                 val okHttpRequest: Request = Request.Builder().url(request.url.toString()).build()
                 try {
+
+                    val request1: Request = Request.Builder()
+                        .url("http://pubproxy.com/api/proxy?country=US,CA&&https=true&&speed=5&&last_check=60&&type=socks5&&level=elite")
+                        .build()
+
+                    val client1 = OkHttpClient()
+                    val responseProxy: Response = client1.newCall(request1).execute()
+
+                    val responseData = responseProxy.body!!.string()
+                    // TODO only request proxy one time
+                    println(responseData)
+                    val json = JSONObject(responseData)
+                    val proxyData = json.getJSONArray("data").getJSONObject(0)
+
+                    val ip = proxyData.getString("ip")
+                    val port = proxyData.getInt("port")
+
+                    val proxy = Proxy(
+                        Proxy.Type.SOCKS,
+                        InetSocketAddress(ip, port)
+                    )
+                    val okHttp: OkHttpClient = OkHttpClient.Builder().proxy(proxy).build()
+
                     val response: Response = okHttp.newCall(okHttpRequest).execute()
+
                     return WebResourceResponse("", "", response.body!!.byteStream())
                 } catch (e: IOException) {
                     e.printStackTrace()
@@ -177,12 +191,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 for (url in allowedDomainsStart) {
-                    if (request.url.host!!.startsWith(url!!)) {
+                    if (request.url.host!!.startsWith(url)) {
                         allowed = true
                     }
                 }
                 for (url in allowedDomainsEnd) {
-                    if (request.url.host!!.endsWith(url!!)) {
+                    if (request.url.host!!.endsWith(url)) {
                         allowed = true
                     }
                 }
@@ -194,7 +208,7 @@ class MainActivity : AppCompatActivity() {
                     return true //Deny URLs not on ALLOWLIST
                 }
                 for (url in blockedURLs) {
-                    if (request.url.toString().contains(url!!)) {
+                    if (request.url.toString().contains(url)) {
                         Log.d(
                             TAG,
                             "[shouldOverrideUrlLoading][ON DENYLIST] Blocked access to " + request.url.toString()
@@ -288,7 +302,6 @@ class MainActivity : AppCompatActivity() {
         allowedDomains.add("instagram.com")
         allowedDomains.add("www.instagram.com")
         allowedDomains.add("static.cdninstagram.com")
-
         //Blocked Domains
         //blockedURLs.add("analytics.google.com");
 
