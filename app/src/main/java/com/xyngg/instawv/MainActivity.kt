@@ -1,6 +1,9 @@
 package com.xyngg.instawv
 
+import android.R.attr.password
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -132,26 +135,17 @@ class MainActivity : AppCompatActivity() {
                 }
                 val okHttpRequest: Request = Request.Builder().url(request.url.toString()).build()
                 try {
+                    // val dispatcher = Dispatcher()
+                    // dispatcher.maxRequests = 1
 
-                    val request1: Request = Request.Builder()
-                        .url("http://pubproxy.com/api/proxy?country=US,CA&&https=true&&speed=5&&last_check=60&&type=socks5&&level=elite")
-                        .build()
+                    val proxyString = getProxy().split(":")
+                    Log.e(TAG, proxyString[0] + ":" +proxyString[1].toInt())
 
-                    val client1 = OkHttpClient()
-                    val responseProxy: Response = client1.newCall(request1).execute()
-
-                    val responseData = responseProxy.body!!.string()
-                    // TODO only request proxy one time
-                    println(responseData)
-                    val json = JSONObject(responseData)
-                    val proxyData = json.getJSONArray("data").getJSONObject(0)
-
-                    val ip = proxyData.getString("ip")
-                    val port = proxyData.getInt("port")
+                    // TODO instagram through a http proxy ?
 
                     val proxy = Proxy(
-                        Proxy.Type.SOCKS,
-                        InetSocketAddress(ip, port)
+                        Proxy.Type.HTTP,
+                        InetSocketAddress(proxyString[0], proxyString[1].toInt())
                     )
                     val okHttp: OkHttpClient = OkHttpClient.Builder().proxy(proxy).build()
 
@@ -307,5 +301,42 @@ class MainActivity : AppCompatActivity() {
 
         //Blocked URLs
         //blockedURLs.add("google.com/maps/preview/log204");
+    }
+
+    private fun getProxy() : String {
+        val proxyPrefs = getSharedPreferences(
+            getString(R.string.proxy), Context.MODE_PRIVATE)
+        val proxyString = proxyPrefs.getString("proxy", "")
+        Log.d(TAG, proxyString!!)
+
+        if(proxyString.isEmpty()){
+            val dispatcher = Dispatcher()
+            dispatcher.maxRequests = 1
+
+            val request1: Request = Request.Builder()
+                .url("http://pubproxy.com/api/proxy?country=US,CA&&https=true&&speed=5&&last_check=60&&type=http&&level=elite")
+                .build()
+
+            val client = OkHttpClient.Builder().dispatcher(dispatcher).build()
+            val responseProxy: Response = client.newCall(request1).execute()
+
+            val responseData = responseProxy.body!!.string()
+
+            val json = JSONObject(responseData)
+            val proxyData = json.getJSONArray("data").getJSONObject(0)
+
+            val ip = proxyData.getString("ip")
+            val port = proxyData.getInt("port")
+
+            val edit: SharedPreferences.Editor = proxyPrefs.edit()
+            edit.putString("proxy", "$ip:$port")
+            edit.apply()
+
+            Log.d(TAG, "$ip:$port")
+
+            return "$ip:$port"
+        }
+
+        return proxyString
     }
 }

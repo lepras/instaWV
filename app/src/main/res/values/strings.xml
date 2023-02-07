@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Instagram WV</string>
     <string name="intent_string">Open in restricted webview</string>
+    <string name="proxy">proxy</string>
 </resources>
