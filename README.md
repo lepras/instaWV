@@ -15,12 +15,12 @@ Features
 - ~~Clears private data on close~~
 - [TODO] Blocks access to trackers and other third-party resources
 - Restricts all network requests to HTTPS
-- Proxy
+- ~~Proxy~~ (Use ProxyDroid)
 
 Downsides
 ---------
 Well facebook is probably clever to circumvent this. 
-Use it in custom profile with `android faker` & `XPrivacyLua` with a `VPN` for maximum privacy (whatever that is)
+Use it in custom profile with `android faker` & `XPrivacyLua` with a `VPN/ProxyDroid` for maximum privacy (whatever that is)
 
 Credits
 -------

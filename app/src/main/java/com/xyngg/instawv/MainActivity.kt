@@ -1,9 +1,6 @@
 package com.xyngg.instawv
 
-import android.R.attr.password
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -11,11 +8,6 @@ import android.view.View
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import okhttp3.*
-import org.json.JSONObject
-import java.io.IOException
-import java.net.InetSocketAddress
-import java.net.Proxy
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,7 +15,6 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private var instaWebView: WebView? = null
-    private var instaWebSettings: WebSettings? = null
     private var instaCookieManager: CookieManager? = null
 
     private val allowedDomains = ArrayList<String>()
@@ -31,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     private val allowedDomainsEnd = ArrayList<String>()
     private val blockedURLs = ArrayList<String>()
 
-    private val consentDateFormat: DateFormat = SimpleDateFormat("yyyyMMdd")
+    private val consentDateFormat: DateFormat = SimpleDateFormat("yyyyMMdd", Locale.US)
     private val TAG = "InstaWV"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,26 +31,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val urlToLoad = "https://www.instagram.com"
-        //try {
-        //    val data = intent.data
-        //    urlToLoad = data.toString()
-        //    if (data.toString().startsWith("https://")) {
-        //        urlToLoad = data.toString()
-        //    }
-        //} catch (e: Exception) {
-        //    Log.d(TAG, "No or Invalid URL passed. Opening homepage instead.")
-        //}
 
         //Create the WebView
         instaWebView = findViewById<View>(R.id.InstaWebView) as WebView
 
         //Set cookie options
-        val instaCookieManager = CookieManager.getInstance()
-        instaCookieManager.setAcceptCookie(true)
-        instaCookieManager.setAcceptThirdPartyCookies(instaWebView, false)
+        instaCookieManager = CookieManager.getInstance()
+        instaCookieManager!!.setAcceptCookie(true)
+        instaCookieManager!!.setAcceptThirdPartyCookies(instaWebView, false)
 
-        //Delete anything from previous sessions
-//        resetWebView(false)
+        resetWebView(false)
 
         //Set the consent cookie to prevent unnecessary redirections
         setConsentCookie()
@@ -133,29 +114,6 @@ class MainActivity : AppCompatActivity() {
                         ) //Deny URLs on DENYLIST
                     }
                 }
-                val okHttpRequest: Request = Request.Builder().url(request.url.toString()).build()
-                try {
-                    // val dispatcher = Dispatcher()
-                    // dispatcher.maxRequests = 1
-
-                    val proxyString = getProxy().split(":")
-                    Log.e(TAG, proxyString[0] + ":" +proxyString[1].toInt())
-
-                    // TODO instagram through a http proxy ?
-
-                    val proxy = Proxy(
-                        Proxy.Type.HTTP,
-                        InetSocketAddress(proxyString[0], proxyString[1].toInt())
-                    )
-                    val okHttp: OkHttpClient = OkHttpClient.Builder().proxy(proxy).build()
-
-                    val response: Response = okHttp.newCall(okHttpRequest).execute()
-
-                    return WebResourceResponse("", "", response.body!!.byteStream())
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-
                 return null
             }
 
@@ -215,11 +173,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Set more options
-        var instaWebSettings = instaWebView!!.settings
+        val instaWebSettings = instaWebView!!.settings
         //Enable some WebView features
         instaWebSettings.javaScriptEnabled = true
         instaWebSettings.cacheMode = WebSettings.LOAD_DEFAULT
-        instaWebSettings.setGeolocationEnabled(true)
+        instaWebSettings.setGeolocationEnabled(false)
         //Disable some WebView features
         instaWebSettings.allowContentAccess = false
         instaWebSettings.allowFileAccess = false
@@ -229,7 +187,7 @@ class MainActivity : AppCompatActivity() {
         instaWebSettings.domStorageEnabled = false
         instaWebSettings.saveFormData = false
         //Change the User-Agent
-        instaWebSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 12; Unspecified Device) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.79 Mobile Safari/537.36")
+        instaWebSettings.userAgentString = "Mozilla/5.0 (Linux; Android 12; Unspecified Device) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.79 Mobile Safari/537.36"
 
         //Load Instagram
         instaWebView!!.loadUrl(urlToLoad)
@@ -261,18 +219,18 @@ class MainActivity : AppCompatActivity() {
         if (exit) {
             instaWebView!!.loadUrl("about:blank")
             instaWebView!!.removeAllViews()
-            instaWebSettings!!.javaScriptEnabled = false
+//            instaWebSettings!!.javaScriptEnabled = false
         }
-        //instaWebView.clearCache(true);
+        instaWebView!!.clearCache(true);
         instaWebView!!.clearFormData()
         instaWebView!!.clearHistory()
         instaWebView!!.clearMatches()
         instaWebView!!.clearSslPreferences()
 //        instaCookieManager!!.removeSessionCookie()
 //        instaCookieManager!!.removeAllCookie()
-        CookieManager.getInstance().removeAllCookies(null)
-        CookieManager.getInstance().flush()
-        WebStorage.getInstance().deleteAllData()
+//        CookieManager.getInstance().removeAllCookies(null)
+//        CookieManager.getInstance().flush()
+//        WebStorage.getInstance().deleteAllData()
         if (exit) {
             instaWebView!!.destroyDrawingCache()
             instaWebView!!.destroy()
@@ -286,9 +244,9 @@ class MainActivity : AppCompatActivity() {
         val random2digit = random.nextInt(2) + 15
         val random3digit = random.nextInt(999)
         val consentCookie = "YES+cb.$consentDate-$random2digit-p1.en+F+$random3digit"
-//        instaCookieManager!!.setCookie(".google.com", "CONSENT=$consentCookie;")
-        //instaCookieManager.setCookie(".google.com", "CONSENT=PENDING+" + random3digit + ";"); //alternative
-//        instaCookieManager!!.setCookie(".google.com", "ANID=OPT_OUT;")
+        instaCookieManager!!.setCookie(".instagram.com", "CONSENT=$consentCookie;")
+        instaCookieManager!!.setCookie(".instagram.com", "CONSENT=PENDING+$random3digit;");
+        instaCookieManager!!.setCookie(".instagram.com", "ANID=OPT_OUT;")
     }
 
     private fun initURLs() {
@@ -303,40 +261,40 @@ class MainActivity : AppCompatActivity() {
         //blockedURLs.add("google.com/maps/preview/log204");
     }
 
-    private fun getProxy() : String {
-        val proxyPrefs = getSharedPreferences(
-            getString(R.string.proxy), Context.MODE_PRIVATE)
-        val proxyString = proxyPrefs.getString("proxy", "")
-        Log.d(TAG, proxyString!!)
-
-        if(proxyString.isEmpty()){
-            val dispatcher = Dispatcher()
-            dispatcher.maxRequests = 1
-
-            val request1: Request = Request.Builder()
-                .url("http://pubproxy.com/api/proxy?country=US,CA&&https=true&&speed=5&&last_check=60&&type=http&&level=elite")
-                .build()
-
-            val client = OkHttpClient.Builder().dispatcher(dispatcher).build()
-            val responseProxy: Response = client.newCall(request1).execute()
-
-            val responseData = responseProxy.body!!.string()
-
-            val json = JSONObject(responseData)
-            val proxyData = json.getJSONArray("data").getJSONObject(0)
-
-            val ip = proxyData.getString("ip")
-            val port = proxyData.getInt("port")
-
-            val edit: SharedPreferences.Editor = proxyPrefs.edit()
-            edit.putString("proxy", "$ip:$port")
-            edit.apply()
-
-            Log.d(TAG, "$ip:$port")
-
-            return "$ip:$port"
-        }
-
-        return proxyString
-    }
+//    private fun getProxy() : String {
+//        val proxyPrefs = getSharedPreferences(
+//            getString(R.string.proxy), Context.MODE_PRIVATE)
+//        val proxyString = proxyPrefs.getString("proxy", "")
+//        Log.d(TAG, proxyString!!)
+//
+//        if(proxyString.isEmpty()){
+//            val dispatcher = Dispatcher()
+//            dispatcher.maxRequests = 1
+//
+//            val request1: Request = Request.Builder()
+//                .url("http://pubproxy.com/api/proxy?country=US,CA&&https=true&&speed=5&&last_check=60&&type=http&&level=elite")
+//                .build()
+//
+//            val client = OkHttpClient.Builder().dispatcher(dispatcher).build()
+//            val responseProxy: Response = client.newCall(request1).execute()
+//
+//            val responseData = responseProxy.body!!.string()
+//
+//            val json = JSONObject(responseData)
+//            val proxyData = json.getJSONArray("data").getJSONObject(0)
+//
+//            val ip = proxyData.getString("ip")
+//            val port = proxyData.getInt("port")
+//
+//            val edit: SharedPreferences.Editor = proxyPrefs.edit()
+//            edit.putString("proxy", "$ip:$port")
+//            edit.apply()
+//
+//            Log.d(TAG, "$ip:$port")
+//
+//            return "$ip:$port"
+//        }
+//
+//        return proxyString
+//    }
 }
